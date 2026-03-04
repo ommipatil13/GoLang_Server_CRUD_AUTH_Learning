@@ -1,5 +1,8 @@
 Live
 https://golang-server-crud-auth-learning.onrender.com/
+
+AWS
+https://haiyk2bz5hpupwy6hs24e52s3q0oxzxz.lambda-url.ap-south-1.on.aws/
 --------------------------------------------------------------------------
 # 🚀 Golang Auth API (Gin + GORM + Postgres)
 
