@@ -77,8 +77,42 @@ CompileDaemon --build="go build -o server.exe main.go" --command="./server.exe"
 | `POST` | `/api/logout` | Invalidate session |
 | `GET` | `/api/users` | List all registered users |
 
+## ☁️ Deployment: AWS Lambda & CI/CD
+
+This project is configured to run on both local servers (like Railway/Render) and **AWS Lambda**.
+
+### 1. How it works (Lambda Adapter)
+In `main.go`, we use a **Lambda Adapter** that transforms AWS API Gateway events into standard HTTP requests that the **Gin** framework can understand.
+*   **Local**: Starts a standard HTTP server on port 8080.
+*   **Lambda**: Starts the `lambda.Start()` handler when it detects the `LAMBDA_TASK_ROOT` environment variable.
+
+### 2. CI/CD Pipeline (GitHub Actions)
+The file `.github/workflows/deploy.yml` automatically deploys your code to AWS Lambda whenever you push to the `main` branch.
+
+#### 🛠️ Steps to enable:
+1.  **On GitHub**: Go to your repository **Settings** > **Secrets and variables** > **Actions**.
+2.  Add the following **Repository Secrets**:
+    *   `AWS_ACCESS_KEY_ID`: Your AWS Access Key ID.
+    *   `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Access Key.
+3.  Ensure your **AWS Lambda function** has the following environment variables set in the AWS Console:
+    *   `DB_URL`: Your Neon DB connection string.
+    *   `JWT_SECRET`: Your secret key for JWT.
+    *   `REFRESH_SECRET`: Your secret key for Refresh tokens.
+
+### 3. Deploying to AWS Lambda (Manual check)
+The CI/CD pipeline performs these commands:
+```bash
+# Build for Linux (Lambda Runtime)
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o bootstrap main.go
+
+# Zip the binary
+zip deployment.zip bootstrap
+
+# Update Lambda function code
+aws lambda update-function-code --function-name GoLang_Server_CRUD_AUTH --zip-file fileb://deployment.zip
+```
+
 ---
 **Learning Note**: 
-- **JWT (Access Token)** is short-lived.
-- **Refresh Token** is stored in an **HttpOnly Cookie** so that JavaScript cannot access it (protects against XSS).
-- **Refresh Token Rotation** makes sure even if a refresh token is stolen, it becomes invalid as soon as it's used or replaced.
+- **Serverless**: Lambda functions only run when a request comes in, making them extremely cost-effective.
+- **`bootstrap`**: In the new `provided.al2023` Lambda runtime, the binary must be named `bootstrap`.
