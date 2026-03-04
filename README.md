@@ -1,3 +1,6 @@
+Live
+https://golang-server-crud-auth-learning.onrender.com/
+--------------------------------------------------------------------------
 # 🚀 Golang Auth API (Gin + GORM + Postgres)
 
 An industry-standard authentication API built with Go, Gin, and GORM. 
